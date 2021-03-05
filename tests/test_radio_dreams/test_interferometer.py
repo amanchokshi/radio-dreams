@@ -23,9 +23,9 @@ def test_ArrayConfig():
     assert mwa.tiles[0] == "LBA1"
 
     # Test enh_xyz
-    assert x[0] == 88.88166409864053
+    assert x[0] == 426.1829788779756
     assert y[0] == -1999.81
-    assert z[0] == -554.4790283870071
+    assert z[0] == -263.21052602449674
 
 
 def test_ArrayConfig_no_args(capfd):
