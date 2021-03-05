@@ -47,7 +47,12 @@ class Layout:
     def __init__(self, array_csv, latitude=None):
         """Assign variables and read array layout file."""
         self.array_csv = array_csv
-        self.latitude = latitude
+
+        if latitude is None:
+            print(" ** INFO: No latitude provided - defaults to MWA: -26.7033194444")
+            self.latitude = -26.7033194444
+        else:
+            self.latitude = latitude
 
         # Read array layout csv file
         df = pd.read_csv(self.array_csv)
@@ -56,29 +61,25 @@ class Layout:
         self.height = df["Height"].to_numpy()
         self.tiles = df["Tile"]
 
-    def enh_xyz(self):
-        """Convert from local E, N, H to X, Y, Z coordinates."""
-        if self.latitude is not None:
+        # Convert from local E, N, H to X, Y, Z coordinates
+        # Latitude in radians
+        sin_lat = np.sin(np.deg2rad(self.latitude))
+        cos_lat = np.cos(np.deg2rad(self.latitude))
 
-            # Convert latitude to radians and get sin/cos comps
-            sin_lat = np.sin(np.deg2rad(self.latitude))
-            cos_lat = np.cos(np.deg2rad(self.latitude))
-
-            x = self.height * cos_lat - self.north * sin_lat
-            y = self.east
-            z = self.height * sin_lat + self.north * sin_lat
-
-            return x, y, z
-
-        else:
-            print(" ** INFO: enh_xyz() missing 1 required argument: 'latitude'")
+        self.x = self.height * cos_lat - self.north * sin_lat
+        self.y = self.east
+        self.z = self.height * sin_lat + self.north * sin_lat
 
 
-class Synthesis:
+class Synthesis(Layout):
     """Synthesis class."""
 
-    def __init__(self, freq_start=None, freq_bands=None, bandwidth=None):
+    def __init__(
+        self, array_csv, latitude=None, freq_start=None, freq_bands=None, bandwidth=None
+    ):
         """Assign Synth class variables."""
+        super().__init__(array_csv, latitude)
+
         self.freq_start = freq_start
         self.freq_bands = freq_bands
         self.bandwidth = bandwidth
