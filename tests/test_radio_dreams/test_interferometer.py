@@ -13,7 +13,12 @@ test_data = path.abspath(path.join(dirpath, "../test_data"))
 
 def test_Layout():
     """Instance of Layout with test_mwa.csv array to test outputs."""
-    mwa = Layout(array_csv=f"{test_data}/test_mwa.csv", latitude=-26.7033194444)
+    mwa = Layout(
+        array_csv=f"{test_data}/test_mwa.csv",
+        latitude=-26.7033194444,
+        longitude=116.670815,
+        elevation=337.83,
+    )
 
     # Test __init__
     assert mwa.east[0] == -1999.81
@@ -26,13 +31,20 @@ def test_Layout():
     assert mwa.y[0] == -1999.81
     assert mwa.z[0] == -260.53213231153575
 
+    # Test gps
+    assert mwa.gps.latitude.degrees == -26.7033194444
+    assert mwa.gps.longitude.degrees == 116.670815
+    assert mwa.gps.elevation.m == 337.83
 
-def test_Layout_no_latitude(capfd):
+
+def test_Layout_no_gps(capfd):
     """It outputs latitude not provided error."""
     Layout(array_csv=f"{test_data}/test_mwa.csv")
     out, err = capfd.readouterr()
 
     assert "No latitude provided" in out
+    assert "No longitude provided" in out
+    assert "No elevation provided" in out
 
 
 def test_Synthesis_freqs():

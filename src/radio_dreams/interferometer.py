@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+from skyfield.api import wgs84
 
 
 class Layout:
@@ -44,15 +45,9 @@ class Layout:
 
     """
 
-    def __init__(self, array_csv, latitude=None):
+    def __init__(self, array_csv, latitude=None, longitude=None, elevation=None):
         """Assign variables and read array layout file."""
         self.array_csv = array_csv
-
-        if latitude is None:
-            print(" ** INFO: No latitude provided - defaults to MWA: -26.7033194444")
-            self.latitude = -26.7033194444
-        else:
-            self.latitude = latitude
 
         # Read array layout csv file
         df = pd.read_csv(self.array_csv)
@@ -61,10 +56,36 @@ class Layout:
         self.height = df["Height"].to_numpy()
         self.tiles = df["Tile"]
 
+        # MWA latitude
+        if latitude is None:
+            print(
+                " ** INFO: No latitude provided - defaults to MWA: -26.7033194444 deg"
+            )
+            self.latitude = -26.7033194444
+        else:
+            self.latitude = latitude
+
+        # MWA longitude
+        if longitude is None:
+            print(" ** INFO: No longitude provided - defaults to MWA: 116.670815 deg")
+            self.longitude = 116.670815
+        else:
+            self.longitude = longitude
+
+        # MWA elevation
+        if elevation is None:
+            print(" ** INFO: No elevation provided - defaults to MWA: 337.83m")
+            self.elevation = 337.83
+        else:
+            self.elevation = elevation
+
+        # Array gps coords
+        self.gps = wgs84.latlon(self.latitude, self.longitude, self.elevation)
+
         # Convert from local E, N, H to X, Y, Z coordinates
         # Latitude in radians
-        sin_lat = np.sin(np.deg2rad(self.latitude))
-        cos_lat = np.cos(np.deg2rad(self.latitude))
+        sin_lat = np.sin(self.gps.latitude.radians)
+        cos_lat = np.cos(self.gps.latitude.radians)
 
         self.x = self.height * cos_lat - self.north * sin_lat
         self.y = self.east
@@ -75,10 +96,17 @@ class Synthesis(Layout):
     """Synthesis class."""
 
     def __init__(
-        self, array_csv, latitude=None, freq_start=None, freq_bands=None, bandwidth=None
+        self,
+        array_csv,
+        latitude=None,
+        longitude=None,
+        elevation=None,
+        freq_start=None,
+        freq_bands=None,
+        bandwidth=None,
     ):
         """Assign Synth class variables."""
-        super().__init__(array_csv, latitude)
+        super().__init__(array_csv, latitude, longitude, elevation)
 
         self.freq_start = freq_start
         self.freq_bands = freq_bands
