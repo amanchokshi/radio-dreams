@@ -64,8 +64,10 @@ class ArrayConfig:
     def enh_xyz(self):
         """Convert from local E, N, H to X, Y, Z coordinates."""
         if self.latitude is not None:
-            sin_lat = np.sin(self.latitude)
-            cos_lat = np.cos(self.latitude)
+
+            # Convert latitude to radians and get sin/cos comps
+            sin_lat = np.sin(np.deg2rad(self.latitude))
+            cos_lat = np.cos(np.deg2rad(self.latitude))
 
             x = self.height * cos_lat - self.north * sin_lat
             y = self.east
@@ -92,3 +94,9 @@ class ArrayConfig:
                 " ** INFO: freqs() missing required arguments:"
                 " 'freq_start', 'freq_bands', 'bandwidth'"
             )
+
+
+class Synth:
+    """Synthesis class."""
+
+    pass
