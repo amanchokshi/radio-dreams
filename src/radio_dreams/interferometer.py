@@ -2,9 +2,8 @@
 
 import numpy as np
 import pandas as pd
+from scipy import constants as const
 from skyfield.api import wgs84
-
-#  from scipy import constants as const
 
 
 class Layout:
@@ -94,28 +93,20 @@ class Layout:
         self.z = self.height * sin_lat + self.north * sin_lat
 
 
-class Synthesis(Layout):
-    """Synthesis class."""
+class Freqs:
+    """Creates an array of frequencies at which to evaluate interferometer response."""
 
     def __init__(
         self,
-        array_csv,
-        latitude=None,
-        longitude=None,
-        elevation=None,
         freq_start=None,
         freq_bands=None,
         bandwidth=None,
     ):
-        """Assign Synth class variables."""
-        super().__init__(array_csv, latitude, longitude, elevation)
-
+        """Assign Freqs class variables."""
         self.freq_start = freq_start
         self.freq_bands = freq_bands
         self.bandwidth = bandwidth
 
-    def freqs(self):
-        """Create frequency array for interferometer."""
         if None not in [self.freq_start, self.freq_bands, self.bandwidth]:
             freqs = np.arange(
                 self.freq_start,
@@ -123,10 +114,26 @@ class Synthesis(Layout):
                 self.bandwidth,
             )
 
-            return freqs
+            self.freqs = freqs
 
         else:
             print(
                 " ** INFO: freqs() missing required arguments:"
                 " 'freq_start', 'freq_bands', 'bandwidth'"
             )
+
+    def to_lambda(self):
+        """Convert frequency array to wavelengths."""
+        lamdas = const.c / self.freqs
+
+        return lamdas
+
+
+class Synthesis:
+    """Synthesis class."""
+
+    def __init__(
+        self,
+    ):
+        """Assign Synth class variables."""
+        pass

@@ -2,7 +2,7 @@
 
 from os import path
 
-from radio_dreams.interferometer import Layout, Synthesis
+from radio_dreams.interferometer import Freqs, Layout  # Synthesis
 
 # Save the path to this directory
 dirpath = path.dirname(__file__)
@@ -47,21 +47,33 @@ def test_Layout_no_gps(capfd):
     assert "No elevation provided" in out
 
 
-def test_Synthesis_freqs():
+def test_Freqs():
     """It outputs freq array and compares results."""
-    mwa = Synthesis(
-        array_csv=f"{test_data}/test_mwa.csv",
+    mwa_freqs = Freqs(
         freq_start=160e6,
         freq_bands=24,
-        bandwidth=1 * +6,
+        bandwidth=1e6,
     )
 
-    assert mwa.freqs()[0] == 160.0e6
+    assert mwa_freqs.freqs[0] == 160.0e6
 
 
-def test_Synthesis_freqs_no_args(capfd):
+def test_Freqs_no_args(capfd):
     """It prints exception for missing args."""
-    Synthesis(array_csv=f"{test_data}/test_mwa.csv").freqs()
+    Freqs()
 
     out, err = capfd.readouterr()
     assert "missing required arguments" in out
+
+
+def test_Freqs_to_lamba():
+    """It outputs wavelength array and compares results."""
+    mwa_freqs = Freqs(
+        freq_start=160e6,
+        freq_bands=24,
+        bandwidth=1e6,
+    )
+
+    lambdas = mwa_freqs.to_lambda()
+
+    assert lambdas[0] == 1.8737028625
