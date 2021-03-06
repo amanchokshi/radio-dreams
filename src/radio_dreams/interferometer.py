@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 from skyfield.api import wgs84
 
+#  from scipy import constants as const
+
 
 class Layout:
     """A class used to represent the positions of antennas in an interferometer.
