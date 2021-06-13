@@ -7,7 +7,6 @@ __date__ = "2021-06-13"
 __cite__ = "https://github.com/amanchokshi"
 
 import numpy as np
-from numba import njit
 from scipy.constants import c
 
 
@@ -27,8 +26,6 @@ def read_layout(layout_txt):
     """
     return np.loadtxt(layout_txt).T
 
-
-@njit()
 def enh_xyz(layout, latitude):
     """Convert from local E, N, H to X, Y, Z coordinates.
 

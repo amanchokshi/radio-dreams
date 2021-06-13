@@ -1,6 +1,6 @@
 """Test radio_dreams.interferometer ."""
 
-from os import path
+import os
 
 import numpy as np
 from radio_dreams.interferometer import enh_xyz, read_layout, xyz_uvw
@@ -9,12 +9,11 @@ from skyfield.api import wgs84
 mwa_geo = wgs84.latlon(-26.703319, 116.670815, 337.83)
 freqs = np.linspace(200e6, 300e6, 2)
 
-
 # Save the path to this directory
-dirpath = path.dirname(__file__)
+dirpath = os.path.dirname(__file__)
 
 # Obtain path to directory with test_data
-test_data = path.abspath(path.join(dirpath, "./test_data"))
+test_data = os.path.abspath(os.path.join(dirpath, "./test_data"))
 
 
 def test_read_layout():
