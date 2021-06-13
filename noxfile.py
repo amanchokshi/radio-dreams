@@ -37,7 +37,9 @@ def install_with_constraints(session, *args, **kwargs):
 def tests(session):
     """Nox for test suite."""
     args = session.posargs or ["--cov"]
-    install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov")
+    install_with_constraints(
+        session, "coverage[toml]", "pytest", "pytest-cov", "numpy", "skyfield"
+    )
     session.run("pytest", *args)
 
 
