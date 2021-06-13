@@ -8,6 +8,7 @@ locations = "src", "tests", "noxfile.py"
 
 def install_with_constraints(session, *args, **kwargs):
     """Install packages constrained by Poetry's lock file.
+
     This function is a wrapper for nox.sessions.Session.install. It
     invokes pip to install packages inside of the session's virtualenv.
     Additionally, pip is passed a constraints file generated from
@@ -34,6 +35,7 @@ def install_with_constraints(session, *args, **kwargs):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def tests(session):
+    """Nox for test suite."""
     args = session.posargs or ["--cov"]
     install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov")
     session.run("pytest", *args)
@@ -41,6 +43,7 @@ def tests(session):
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def lint(session):
+    """Nox for auto linting."""
     args = session.posargs or locations
     install_with_constraints(session, "flake8", "flake8-black")
     session.run("flake8", *args)
@@ -48,6 +51,7 @@ def lint(session):
 
 @nox.session(python="3.8")
 def black(session):
+    """Nox for black code formatting."""
     args = session.posargs or locations
     install_with_constraints(session, "black")
     session.run("black", *args)

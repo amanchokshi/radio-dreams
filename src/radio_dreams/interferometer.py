@@ -52,7 +52,6 @@ def enh_xyz(layout, latitude):
     :returns: Array of shape [3, n], for X, Y, Z respectively
     :rtype: :class:`numpy.ndarray`
     """
-
     east, north, height = layout[0], layout[1], layout[2]
 
     sin_lat = np.sin(latitude)
