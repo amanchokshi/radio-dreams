@@ -70,32 +70,14 @@ def enh_xyz(layout, latitude):
 
 
 def xyz_uvw(xyz, freqs, ha0, dec0):
-    """Convert from local X, Y, Z to U, V, U coordinates.
+    """Convert local XYZ to UVU coordinates.
 
     U, V, W are coordinates used to represent interferometric baselines
-    as defined below
-
-    .. math::
-        \begin{pmatrix}
-            u \\
-            v \\
-            w
-        \end{pmatrix} =
-        \begin{pmatrix}
-            \sin(H_0) & \cos(H_0) & 0 \\
-            -\sin(\delta_0)\cos(H_0) & \sin(\delta_0)\sin(H_0) & \cos(\delta_0) \\
-            \cos(\delta_0)\cos(H_0) & -\cos(\delta_0)\sin(H_0) & \sin(\delta_0)
-        \end{pmatrix}
-        \begin{pmatrix}
-            X_\lambda \\
-            Y_\lambda \\
-            Z_\lambda
-        \end{pmatrix}
 
     :param xyz: :class:`~numpy.ndarray` object from :func:`enh_xyz`
     :param freqs: :class:`~numpy.ndarray` 1D of frequencies in Hz
     :param ha0: Hour Angle of phase centre in radians `float`
-    :param dec0: Declination of phase centre in radians `float`\
+    :param dec0: Declination of phase centre in radians `float`
 
     :returns: UVW cube, with 0 axis for frequency and 1, 2 for UVWs
     :rtype: :class:`numpy.ndarray`
