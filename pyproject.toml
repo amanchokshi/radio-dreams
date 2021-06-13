@@ -20,6 +20,9 @@ skyfield = "^1.39"
 pytest = "^6.2.4"
 coverage = {extras = ["toml"], version = "^5.5"}
 pytest-cov = "^2.12.1"
+black = "^21.6b0"
+flake8 = "^3.9.2"
+flake8-black = "^0.2.1"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
