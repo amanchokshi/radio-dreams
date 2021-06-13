@@ -35,23 +35,14 @@ def install_with_constraints(session, *args, **kwargs):
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def tests(session):
     args = session.posargs or ["--cov"]
-    install_with_constraints(
-        session,
-        "coverage[toml]",
-        "pytest",
-        "pytest-cov",
-    )
+    install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov")
     session.run("pytest", *args)
 
 
 @nox.session(python=["3.10", "3.9", "3.8", "3.7"])
 def lint(session):
     args = session.posargs or locations
-    install_with_constraints(
-        session,
-        "flake8",
-        "flake8-black",
-    )
+    install_with_constraints(session, "flake8", "flake8-black")
     session.run("flake8", *args)
 
 
