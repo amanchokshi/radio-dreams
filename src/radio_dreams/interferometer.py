@@ -7,6 +7,7 @@ __date__ = "2021-06-13"
 __cite__ = "https://github.com/amanchokshi"
 
 import numpy as np
+from numba import njit
 from scipy.constants import c
 
 
@@ -27,7 +28,8 @@ def read_layout(layout_txt):
     return np.loadtxt(layout_txt).T
 
 
-def enh_xyz(layout, location):
+@njit()
+def enh_xyz(layout, latitude):
     """Convert from local E, N, H to X, Y, Z coordinates.
 
     Antenna positions are defined with respect to the array centre.
@@ -47,7 +49,7 @@ def enh_xyz(layout, location):
     δ - declination
 
     :param layout: :class:`~numpy.ndarray` object from :func:`read_layout`
-    :param location: :func:`~skyfield.toposlib.wgs84` geo location
+    :param latitude: Latitude of array in radians
 
     :returns: Array of shape [3, n], for X, Y, Z respectively
     :rtype: :class:`numpy.ndarray`
@@ -55,14 +57,14 @@ def enh_xyz(layout, location):
 
     east, north, height = layout[0], layout[1], layout[2]
 
-    sin_lat = np.sin(location.latitude.radians)
-    cos_lat = np.cos(location.latitude.radians)
+    sin_lat = np.sin(latitude)
+    cos_lat = np.cos(latitude)
 
     x = height * cos_lat - north * sin_lat
     y = east
     z = height * sin_lat + north * cos_lat
 
-    xyz = np.array([x, y, z])
+    xyz = np.vstack((x, y, z))
 
     return xyz
 
@@ -104,11 +106,24 @@ def xyz_uvw(xyz, freqs, ha0, dec0):
     ly = np.concatenate(xyz[1] - xyz[1][:, None])
     lz = np.concatenate(xyz[2] - xyz[2][:, None])
 
+    # lx = []
+    # for i in xyz[0]:
+    #     for j in xyz[0]:
+    #         lx.append(i - j)
+    # ly = []
+    # for i in xyz[1]:
+    #     for j in xyz[1]:
+    #         ly.append(i - j)
+    # lz = []
+    # for i in xyz[2]:
+    #     for j in xyz[2]:
+    #         lz.append(i - j)
+
     wavelengths = c / freqs
 
-    lx_lambda = lx / wavelengths[:, None]
-    ly_lambda = ly / wavelengths[:, None]
-    lz_lambda = lz / wavelengths[:, None]
+    lx_lambda = np.array(lx) / np.atleast_2d(wavelengths).T
+    ly_lambda = np.array(ly) / np.atleast_2d(wavelengths).T
+    lz_lambda = np.array(lz) / np.atleast_2d(wavelengths).T
 
     xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
 
