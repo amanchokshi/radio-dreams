@@ -34,7 +34,7 @@ Here are the essential project links:
     :alt: GitHub Actions - Build Status
 
 .. |Coverage| image:: https://img.shields.io/codecov/c/github/amanchokshi/radio-dreams/master.svg?color=green&logo=codecov&logoColor=white&label=Coverage
-    :target: https://codecov.io/gh/amanchokshi/radio-dreams/branch/master
+    :target: https://codecov.io/gh/amanchokshi/radio-dreams/branch/main
     :alt: CodeCov - Coverage Status
 
 .. |ReadTheDocs| image:: https://img.shields.io/readthedocs/radio-dreams/latest?color=green&logo=Read%20The%20Docs&logoColor=white
