@@ -1,15 +1,36 @@
-"""Classes and methods describing the functionality of an interferometer."""
+# -*- coding: utf-8 -*-
 
-from pathlib import Path
+"""Imaginary Interferometers."""
+
+__author__ = "Aman Chokshi"
+__date__ = "2021-06-13"
+__cite__ = "https://github.com/amanchokshi"
 
 import numpy as np
 from scipy.constants import c
 
 
-class Telescope:
-    """A class used to represent the positions of antennas in an interferometer.
+def read_layout(layout_txt):
+    """Read array layout from txt file.
 
-    Antenna positions are usually defined with respect to the array centre.
+    Antenna positions are defined with respect to the array centre.
+
+    E - East of the center in metres
+    N - North of center in metres
+    H - Height above sea level in metres
+
+    :param str layout_txt: Path to file with array layout in E, N, H columns
+
+    :returns: Array of shape [3, n], for E, N, H respectively
+    :rtype: :class:`numpy.ndarray`
+    """
+    return np.loadtxt(layout_txt).T
+
+
+def enh_xyz(layout, location):
+    """Convert from local E, N, H to X, Y, Z coordinates.
+
+    Antenna positions are defined with respect to the array centre.
 
     E - East of the center in metres
     N - North of center in metres
@@ -25,115 +46,80 @@ class Telescope:
     h - hour angle
     δ - declination
 
-    .. code-block:: python
+    :param layout: :class:`~numpy.ndarray` object from :func:`read_layout`
+    :param location: :func:`~skyfield.toposlib.wgs84` geo location
 
-        from radio_dreams import interferometer
-
-        mwa_latitude = -26.7033194444
-
-        # An instance of the interferometer.ArrayConfig class for the MWA
-        mwa = interferometer.ArrayConfig(array_csv="../arrays/mwa_phase2.csv")
-
-        # Access the original E, N, H positions of tiles and tile names
-        E = mwa.east
-        N = mwa.north
-        H = mwa.height
-        T = mwa.tiles
-
-        # Access X, Y, Z coordinates of tiles
-        x, y, z = mwa.enh_xyz(latitude=mwa_latitude)
-
-
+    :returns: Array of shape [3, n], for X, Y, Z respectively
+    :rtype: :class:`numpy.ndarray`
     """
 
-    def __init__(self, telescope_name):
+    east, north, height = layout[0], layout[1], layout[2]
 
-        self.name = telescope_name
+    sin_lat = np.sin(location.latitude.radians)
+    cos_lat = np.cos(location.latitude.radians)
 
-    def _read_layout(self, layout):
+    x = height * cos_lat - north * sin_lat
+    y = east
+    z = height * sin_lat + north * cos_lat
 
-        self.layout = np.loadtxt(layout).T
+    xyz = np.array([x, y, z])
 
-    def _enh_xyz(self):
-        """Convert from local E, N, H to X, Y, Z coordinates."""
+    return xyz
 
-        east, north, height = self.layout[0], self.layout[1], self.layout[2]
 
-        sin_lat = np.sin(self.location.latitude.radians)
-        cos_lat = np.cos(self.location.latitude.radians)
+def xyz_uvw(xyz, freqs, ha0, dec0):
+    """Convert from local X, Y, Z to U, V, U coordinates.
 
-        x = height * cos_lat - north * sin_lat
-        y = east
-        z = height * sin_lat + north * cos_lat
+    U, V, W are coordinates used to represent interferometric baselines
+    as defined below
 
-        self.xyz = np.array([x, y, z])
+    .. math::
+        \begin{pmatrix}
+            u \\
+            v \\
+            w
+        \end{pmatrix} =
+        \begin{pmatrix}
+            \sin(H_0) & \cos(H_0) & 0 \\
+            -\sin(\delta_0)\cos(H_0) & \sin(\delta_0)\sin(H_0) & \cos(\delta_0) \\
+            \cos(\delta_0)\cos(H_0) & -\cos(\delta_0)\sin(H_0) & \sin(\delta_0)
+        \end{pmatrix}
+        \begin{pmatrix}
+            X_\lambda \\
+            Y_\lambda \\
+            Z_\lambda
+        \end{pmatrix}
 
-    def configure(self, location=None, layout=None, freqs=None):
-        self.location = location
+    :param xyz: :class:`~numpy.ndarray` object from :func:`enh_xyz`
+    :param freqs: :class:`~numpy.ndarray` 1D of frequencies in Hz
+    :param ha0: Hour Angle of phase centre in radians `float`
+    :param dec0: Declination of phase centre in radians `float`\
 
-        if freqs is not None:
-            self.freqs = freqs
-        try:
-            self.freqs
-        except Exception as e:
-            print(f"FreqMissingError : {e}")
+    :returns: UVW cube, with 0 axis for frequency and 1, 2 for UVWs
+    :rtype: :class:`numpy.ndarray`
+    """
+    # All possible baseline distances, in metres
+    # This is equivalent to two nested for loops
+    lx = np.concatenate(xyz[0] - xyz[0][:, None])
+    ly = np.concatenate(xyz[1] - xyz[1][:, None])
+    lz = np.concatenate(xyz[2] - xyz[2][:, None])
 
-        try:
-            if not Path(layout).is_file():
-                raise FileNotFoundError
+    wavelengths = c / freqs
 
-            try:
-                self._read_layout(layout)
-            except Exception as e:
-                print(e)
+    lx_lambda = lx / wavelengths[:, None]
+    ly_lambda = ly / wavelengths[:, None]
+    lz_lambda = lz / wavelengths[:, None]
 
-        except FileNotFoundError:
-            print(f"FileNotFoundError : Layout file '{layout}' doesn't exist")
+    xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
 
-        try:
-            self._enh_xyz()
-        except Exception as e:
-            print(f"TelescopeConfigError : {e}")
+    xyz_uvw_mat = np.array(
+        [
+            [np.sin(ha0), np.cos(ha0), 0],
+            [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
+            [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
+        ]
+    )
 
-        try:
-            self._lengths_xyz()
-        except Exception as e:
-            print(f"TelescopeConfigError : {e}")
+    uvw = np.matmul(xyz_uvw_mat, xyz_lambda)
 
-    def _lengths_xyz(self):
-
-        # All possible baseline distances, in metres
-        # This is equivalent to two nested for loops
-        lx = np.concatenate(self.xyz[0] - self.xyz[0][:, None])
-        ly = np.concatenate(self.xyz[1] - self.xyz[1][:, None])
-        lz = np.concatenate(self.xyz[2] - self.xyz[2][:, None])
-
-        wavelengths = c / self.freqs
-
-        lx_lambda = lx / wavelengths[:, None]
-        ly_lambda = ly / wavelengths[:, None]
-        lz_lambda = lz / wavelengths[:, None]
-
-        self.xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
-
-    def _uvw(self, ha0, dec0):
-
-        self.ha0 = ha0
-        self.dec0 = dec0
-
-        xyz_uvw_mat = np.array(
-            [
-                [np.sin(self.ha0), np.cos(self.ha0), 0],
-                [
-                    -np.sin(self.dec0) * np.cos(self.ha0),
-                    np.sin(self.dec0) * np.sin(self.ha0),
-                    np.cos(self.dec0),
-                ],
-                [
-                    np.cos(self.dec0) * np.cos(self.ha0),
-                    -np.cos(self.dec0) * np.sin(self.ha0),
-                    np.sin(self.dec0),
-                ],
-            ]
-        )
-        self.uvw = np.matmul(xyz_uvw_mat, self.xyz_lambda)
+    return uvw
