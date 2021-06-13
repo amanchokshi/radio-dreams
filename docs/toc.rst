@@ -10,3 +10,4 @@ Welcome to the documentation for *radio-dreams*
    installation
    exampledreams
    api
+   license

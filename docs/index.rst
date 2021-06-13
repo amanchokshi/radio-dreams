@@ -19,6 +19,7 @@ Documentation
    installation
    exampledreams
    api
+   license
 
 The source code and issue tracker live on other web sites:
 
