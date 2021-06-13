@@ -3,7 +3,7 @@ import tempfile
 import nox
 
 nox.options.sessions = "lint", "tests"
-locations = "src", "tests", "noxfile.py"
+locations = "src", "tests", "noxfile.py", "docs/conf.py"
 
 
 def install_with_constraints(session, *args, **kwargs):
@@ -55,3 +55,10 @@ def black(session):
     args = session.posargs or locations
     install_with_constraints(session, "black")
     session.run("black", *args)
+
+
+@nox.session(python="3.8")
+def docs(session):
+    """Build the documentation."""
+    install_with_constraints(session, "sphinx")
+    session.run("sphinx-build", "docs", "docs/_build")
