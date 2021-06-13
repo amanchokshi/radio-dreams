@@ -26,6 +26,7 @@ def read_layout(layout_txt):
     """
     return np.loadtxt(layout_txt).T
 
+
 def enh_xyz(layout, latitude):
     """Convert from local E, N, H to X, Y, Z coordinates.
 

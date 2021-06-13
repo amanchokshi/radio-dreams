@@ -39,6 +39,7 @@ def test_enh_xyz():
     assert xyz[1, 0] == -149.785
     assert xyz[2, 0] == 68.04598792853452
 
+
 def test_xyz_uvw():
     """Check output values and shape."""
 
