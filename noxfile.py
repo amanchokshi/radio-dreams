@@ -2,6 +2,7 @@ import tempfile
 
 import nox
 
+package = "radio_dreams"
 nox.options.sessions = "lint", "tests"
 locations = "src", "tests", "noxfile.py", "docs/conf.py"
 
@@ -37,9 +38,8 @@ def install_with_constraints(session, *args, **kwargs):
 def tests(session):
     """Nox for test suite."""
     args = session.posargs or ["--cov"]
-    install_with_constraints(
-        session, "coverage[toml]", "pytest", "pytest-cov", "numpy", "skyfield"
-    )
+    session.run("poetry", "install", "--no-dev", external=True)
+    install_with_constraints(session, "coverage[toml]", "pytest", "pytest-cov")
     session.run("pytest", *args)
 
 
