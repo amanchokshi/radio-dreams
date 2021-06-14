@@ -20,7 +20,7 @@ test_data = os.path.abspath(os.path.join(dirpath, "./test_data"))
 def test_read_layout():
     """Check read values match data."""
 
-    layout = read_layout(f"{test_data}/test_mwa.txt")
+    layout = read_layout(layout_path=f"{test_data}/test_mwa.txt")
 
     assert layout.shape[0] == 3
     assert layout[0][0] == -1.497849999999999966e02
@@ -31,8 +31,8 @@ def test_read_layout():
 def test_enh_xyz():
     """Check output values and shape."""
 
-    layout = read_layout(f"{test_data}/test_mwa.txt")
-    xyz = enh_xyz(layout, mwa_geo.latitude.radians)
+    layout = read_layout(layout_path=f"{test_data}/test_mwa.txt")
+    xyz = enh_xyz(layout=layout, latitude=mwa_geo.latitude.radians)
 
     assert xyz.shape[0] == 3
     assert xyz.shape[1] == 3
@@ -44,9 +44,9 @@ def test_enh_xyz():
 def test_xyz_uvw():
     """Check output values and shape."""
 
-    layout = read_layout(f"{test_data}/test_mwa.txt")
-    xyz = enh_xyz(layout, mwa_geo.latitude.radians)
-    uvw = xyz_uvw(xyz, freq, mwa_geo.latitude.radians, 0)
+    layout = read_layout(layout_path=f"{test_data}/test_mwa.txt")
+    xyz = enh_xyz(layout=layout, latitude=mwa_geo.latitude.radians)
+    uvw = xyz_uvw(xyz=xyz, freq=freq, dec0=mwa_geo.latitude.radians, ha0=0)
 
     assert uvw.shape == (3, 9)
 

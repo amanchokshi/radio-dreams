@@ -11,7 +11,7 @@ from numba import njit
 from scipy.constants import c
 
 
-def read_layout(layout_txt):
+def read_layout(layout_path=None):
     """Read array layout from txt file.
 
     Antenna positions are defined with respect to the array centre.
@@ -20,16 +20,16 @@ def read_layout(layout_txt):
     N - North of center in metres
     H - Height above sea level in metres
 
-    :param str layout_txt: Path to file with array layout in E, N, H columns
+    :param str layout_path: Path to file with array layout in E, N, H columns
 
     :returns: Array of shape [3, n], for E, N, H respectively
     :rtype: :class:`~numpy.ndarray`
     """
-    return np.loadtxt(layout_txt).T
+    return np.loadtxt(layout_path).T
 
 
 @njit()
-def enh_xyz(layout, latitude):
+def enh_xyz(layout=None, latitude=None):
     """Convert from local E, N, H to X, Y, Z coordinates.
 
     Antenna positions are defined with respect to the array centre.
@@ -70,7 +70,7 @@ def enh_xyz(layout, latitude):
 
 
 @njit()
-def xyz_uvw(xyz, freq, dec0, ha0):
+def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     """Convert local XYZ to UVU coordinates.
 
     U, V, W are coordinates used to represent interferometric baselines
