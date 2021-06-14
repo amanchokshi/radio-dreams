@@ -145,14 +145,36 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
 
 
 @njit()
-def uv_degrid(max_lambda=1400, nside=511, uvw=None):
+def gauss_kernel(sigma, kersize):
+    """Create 2D gaussian kernel."""
+    x, y = np.arange(kersize), np.arange(kersize)
+
+    cen = int(kersize / 2)
+    norm = 1 / (2 * np.pi * sigma ** 2)
+
+    # Looks instead of meshgrid as
+    # Numba doesn't support it
+    gauss = np.zeros((kersize, kersize))
+    for i in x:
+        for j in y:
+            gauss[i, j] = norm * np.exp(
+                (-1 / (2 * sigma ** 2)) * ((i - cen) ** 2 + (j - cen) ** 2)
+            )
+
+    return gauss
+
+
+@njit()
+def uv_degrid(
+    max_lambda=1400, nside=511, uvw=None, sigma=3, kersize=21, kernel="gaussian"
+):
     """Degrid continuous uv baselines onto regular uv grid."""
     # Define a grid of u, v coords
     u_range = np.linspace(-1 * max_lambda, max_lambda, nside)
     v_range = np.linspace(-1 * max_lambda, max_lambda, nside)
 
     # Create empty uv grid onto which uv samples will be degridded
-    uv_grid = np.zeros((u_range.shape[0], v_range.shape[0]))
+    uv_grid = np.zeros((v_range.shape[0], u_range.shape[0]))
 
     # Continuous uv coords of array to be degridded onto uv_grid
     u, v = uvw[0], uvw[1]
@@ -161,14 +183,29 @@ def uv_degrid(max_lambda=1400, nside=511, uvw=None):
     # u_closest_ind = np.argmin(np.abs(u_range - u[:, None]), axis=1)
     # v_closest_ind = np.argmin(np.abs(v_range - v[:, None]), axis=1)
 
-    u_closest_ind = np.zeros((u.shape[0]))
-    v_closest_ind = np.zeros((v.shape[0]))
     for i in range(u.shape[0]):
 
-        u_closest_ind[i] = np.argmin(np.abs(u_range - u[i]))
-        v_closest_ind[i] = np.argmin(np.abs(v_range - v[i]))
+        # Indicies of the closest pixel
+        u_ind = np.argmin(np.abs(u_range - u[i]))
+        v_ind = np.argmin(np.abs(v_range - v[i]))
 
-    for i in range(u_closest_ind.shape[0]):
-        uv_grid[int(u_closest_ind[i]), int(v_closest_ind[i])] += 1
+        # Use gaussian kernal by default
+        if kernel == "gaussian":
 
+            gauss = gauss_kernel(sigma, kersize)
+
+            ker_2 = int(kersize / 2)
+
+            v_grid_inds = np.arange(v_ind - ker_2, v_ind + ker_2 + 1)
+            u_grid_inds = np.arange(u_ind - ker_2, u_ind + ker_2 + 1)
+
+            for vi in range(v_grid_inds.shape[0]):
+                for ui in range(u_grid_inds.shape[0]):
+                    if (v_grid_inds[vi] >= 0) & (v_grid_inds[vi] < nside):
+                        if (u_grid_inds[ui] >= 0) & (u_grid_inds[ui] < nside):
+                            uv_grid[v_grid_inds[vi], u_grid_inds[ui]] += gauss[vi, ui]
+
+        # if not gaussian snap to closest gridpoint
+        else:
+            uv_grid[int(v_ind), int(u_ind)] += 1
     return uv_grid
