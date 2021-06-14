@@ -4,7 +4,13 @@ import os
 
 os.environ["NUMBA_DISABLE_JIT"] = "1"
 
-from radio_dreams.interferometer import enh_xyz, read_layout, xyz_uvw
+from radio_dreams.interferometer import (
+    enh_xyz,
+    gauss_kernel,
+    read_layout,
+    uv_degrid,
+    xyz_uvw,
+)
 from skyfield.api import wgs84
 
 mwa_geo = wgs84.latlon(-26.703319, 116.670815, 337.83)
@@ -53,3 +59,38 @@ def test_xyz_uvw():
     assert uvw[0][0] == 0.0
     assert uvw[1][0] == 0.0
     assert uvw[2][0] == 0.0
+
+
+def test_gauss_kernel():
+    """Check output values and shape."""
+
+    gauss = gauss_kernel(2, 5)
+
+    assert gauss.shape == (5, 5)
+    assert gauss[2, 2] == 0.039788735772973836
+
+
+def test_uv_degrid():
+    """Check output values and shape."""
+
+    layout = read_layout(layout_path=f"{test_data}/test_mwa.txt")
+    xyz = enh_xyz(layout=layout, latitude=mwa_geo.latitude.radians)
+    uvw = xyz_uvw(xyz=xyz, freq=freq, dec0=mwa_geo.latitude.radians, ha0=0)
+    uv = uv_degrid(max_lambda=1400, nside=20, uvw=uvw, sigma=3, kersize=21, kernel=None)
+
+    assert uv.shape == (20, 20)
+    assert uv[0, 0] == 0.0
+
+
+def test_uv_degrid_gaussian_kernel():
+    """Check output values and shape."""
+
+    layout = read_layout(layout_path=f"{test_data}/test_mwa.txt")
+    xyz = enh_xyz(layout=layout, latitude=mwa_geo.latitude.radians)
+    uvw = xyz_uvw(xyz=xyz, freq=freq, dec0=mwa_geo.latitude.radians, ha0=0)
+    uv = uv_degrid(
+        max_lambda=1400, nside=20, uvw=uvw, sigma=3, kersize=21, kernel="gaussian"
+    )
+
+    assert uv.shape == (20, 20)
+    assert uv[0, 0] == 1.295932713086053e-05
