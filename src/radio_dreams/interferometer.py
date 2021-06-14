@@ -69,15 +69,15 @@ def enh_xyz(layout, latitude):
 
 
 @njit()
-def xyz_uvw(xyz, freqs, dec0, ha0):
+def xyz_uvw(xyz, freq, dec0, ha0):
     """Convert local XYZ to UVU coordinates.
 
     U, V, W are coordinates used to represent interferometric baselines
 
-    :param xyz: :class:`~numpy.ndarray` object from :func:`enh_xyz`
-    :param freqs: :class:`~numpy.ndarray` 1D of frequencies in Hz
-    :param dec0: Declination of phase centre in radians `float`
-    :param ha0: Hour Angle of phase centre in radians `float`
+    :param :class:`~numpy.ndarray` xyz:  object from :func:`enh_xyz`
+    :param float freq: 1D of frequencies in Hz
+    :param float dec0: Declination of phase centre in radians
+    :param float ha0: Hour Angle of phase centre in radians
 
     :returns: UVW cube, with 0 axis for frequency and 1, 2 for UVWs
     :rtype: :class:`numpy.ndarray`
@@ -121,25 +121,22 @@ def xyz_uvw(xyz, freqs, dec0, ha0):
         for j in xyz[2]:
             lz.append(i - j)
 
-    wavelengths = c / freqs
+    wavelength = c / freq
 
-    uvw = np.zeros((freqs.shape[0], 3, len(lx)))
-    for i in range(wavelengths.shape[0]):
+    lx_lambda = np.array(lx) / wavelength
+    ly_lambda = np.array(ly) / wavelength
+    lz_lambda = np.array(lz) / wavelength
 
-        lx_lambda = np.array(lx) / wavelengths[i]
-        ly_lambda = np.array(ly) / wavelengths[i]
-        lz_lambda = np.array(lz) / wavelengths[i]
+    xyz_lambda = np.vstack((lx_lambda, ly_lambda, lz_lambda))
 
-        xyz_lambda = np.vstack((lx_lambda, ly_lambda, lz_lambda))
+    xyz_uvw_mat = np.array(
+        [
+            [np.sin(ha0), np.cos(ha0), 0],
+            [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
+            [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
+        ]
+    )
 
-        xyz_uvw_mat = np.array(
-            [
-                [np.sin(ha0), np.cos(ha0), 0],
-                [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
-                [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
-            ]
-        )
-
-        uvw[i] = np.dot(xyz_uvw_mat, xyz_lambda)
+    uvw = np.dot(xyz_uvw_mat, xyz_lambda)
 
     return uvw

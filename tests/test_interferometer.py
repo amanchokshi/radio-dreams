@@ -4,12 +4,11 @@ import os
 
 os.environ["NUMBA_DISABLE_JIT"] = "1"
 
-import numpy as np
 from radio_dreams.interferometer import enh_xyz, read_layout, xyz_uvw
 from skyfield.api import wgs84
 
 mwa_geo = wgs84.latlon(-26.703319, 116.670815, 337.83)
-freqs = np.linspace(200e6, 300e6, 2)
+freq = 200e6
 
 # Save the path to this directory
 dirpath = os.path.dirname(__file__)
@@ -47,10 +46,10 @@ def test_xyz_uvw():
 
     layout = read_layout(f"{test_data}/test_mwa.txt")
     xyz = enh_xyz(layout, mwa_geo.latitude.radians)
-    uvw = xyz_uvw(xyz, freqs, mwa_geo.latitude.radians, 0)
+    uvw = xyz_uvw(xyz, freq, mwa_geo.latitude.radians, 0)
 
-    assert uvw.shape == (2, 3, 9)
+    assert uvw.shape == (3, 9)
 
-    assert uvw[0][0][0] == 0.0
-    assert uvw[0][1][0] == 0.0
-    assert uvw[0][2][0] == 0.0
+    assert uvw[0][0] == 0.0
+    assert uvw[1][0] == 0.0
+    assert uvw[2][0] == 0.0
