@@ -23,7 +23,7 @@ def read_layout(layout_txt):
     :param str layout_txt: Path to file with array layout in E, N, H columns
 
     :returns: Array of shape [3, n], for E, N, H respectively
-    :rtype: :class:`numpy.ndarray`
+    :rtype: :class:`~numpy.ndarray`
     """
     return np.loadtxt(layout_txt).T
 
@@ -48,11 +48,12 @@ def enh_xyz(layout, latitude):
     h - hour angle
     δ - declination
 
-    :param layout: :class:`~numpy.ndarray` object from :func:`read_layout`
-    :param latitude: Latitude of array in radians
+    :param layout: object from :func:`read_layout`
+    :type layout: :class:`~numpy.ndarray`
+    :param float latitude: Latitude of array in radians
 
     :returns: Array of shape [3, n], for X, Y, Z respectively
-    :rtype: :class:`numpy.ndarray`
+    :rtype: :class:`~numpy.ndarray`
     """
     east, north, height = layout[0], layout[1], layout[2]
 
@@ -74,13 +75,14 @@ def xyz_uvw(xyz, freq, dec0, ha0):
 
     U, V, W are coordinates used to represent interferometric baselines
 
-    :param :class:`~numpy.ndarray` xyz:  object from :func:`enh_xyz`
+    :param xyz:  object from :func:`enh_xyz`
+    :type xyz: :class:`~numpy.ndarray`
     :param float freq: 1D of frequencies in Hz
     :param float dec0: Declination of phase centre in radians
     :param float ha0: Hour Angle of phase centre in radians
 
     :returns: UVW cube, with 0 axis for frequency and 1, 2 for UVWs
-    :rtype: :class:`numpy.ndarray`
+    :rtype: :class:`~numpy.ndarray`
     """
     # All possible baseline distances, in metres
     # This is equivalent to two nested for loops
