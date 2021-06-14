@@ -68,6 +68,7 @@ def enh_xyz(layout, latitude):
     return xyz
 
 
+@njit()
 def xyz_uvw(xyz, freqs, dec0, ha0):
     """Convert local XYZ to UVU coordinates.
 
@@ -87,35 +88,58 @@ def xyz_uvw(xyz, freqs, dec0, ha0):
     # ly = np.concatenate(xyz[1] - xyz[1][:, None])
     # lz = np.concatenate(xyz[2] - xyz[2][:, None])
 
-    lx = np.zeros([xyz.shape[-1] ** 2])
-    for i, ii in enumerate(xyz[0]):
-        for j, jj in enumerate(xyz[0]):
-            lx[i * j] = ii - jj
-    ly = np.zeros([xyz.shape[-1] ** 2])
-    for i, ii in enumerate(xyz[1]):
-        for j, jj in enumerate(xyz[1]):
-            ly[i * j] = ii - jj
-    lz = np.zeros([xyz.shape[-1] ** 2])
-    for i, ii in enumerate(xyz[2]):
-        for j, jj in enumerate(xyz[2]):
-            lz[i * j] = ii - jj
+    # wavelengths = c / freqs
+
+    # lx_lambda = np.array(lx) / np.atleast_2d(wavelengths).T
+    # ly_lambda = np.array(ly) / np.atleast_2d(wavelengths).T
+    # lz_lambda = np.array(lz) / np.atleast_2d(wavelengths).T
+
+    # xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
+
+    # xyz_uvw_mat = np.array(
+    #     [
+    #         [np.sin(ha0), np.cos(ha0), 0],
+    #         [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
+    #         [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
+    #     ]
+    # )
+
+    # uvw = np.matmul(xyz_uvw_mat, xyz_lambda)
+
+    lx = []
+    for i in xyz[0]:
+        for j in xyz[0]:
+            lx.append(i - j)
+    ly = []
+    for i in xyz[1]:
+        for j in xyz[1]:
+            ly.append(i - j)
+    lz = []
+    for i in xyz[2]:
+        for j in xyz[2]:
+            lz.append(i - j)
 
     wavelengths = c / freqs
 
-    lx_lambda = lx / np.atleast_2d(wavelengths).T
-    ly_lambda = ly / np.atleast_2d(wavelengths).T
-    lz_lambda = lz / np.atleast_2d(wavelengths).T
+    uvw = np.zeros((freqs.shape[0], 3, len(lx)))
+    #  uvw = []
+    for i in range(wavelengths.shape[0]):
 
-    xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
+        lx_lambda = np.array(lx) / wavelengths[i]
+        ly_lambda = np.array(ly) / wavelengths[i]
+        lz_lambda = np.array(lz) / wavelengths[i]
 
-    xyz_uvw_mat = np.array(
-        [
-            [np.sin(ha0), np.cos(ha0), 0],
-            [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
-            [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
-        ]
-    )
+        xyz_lambda = np.vstack((lx_lambda, ly_lambda, lz_lambda))
 
-    uvw = np.matmul(xyz_uvw_mat, xyz_lambda)
+        xyz_uvw_mat = np.array(
+            [
+                [np.sin(ha0), np.cos(ha0), 0],
+                [-np.sin(dec0) * np.cos(ha0), np.sin(dec0) * np.sin(ha0), np.cos(dec0)],
+                [np.cos(dec0) * np.cos(ha0), -np.cos(dec0) * np.sin(ha0), np.sin(dec0)],
+            ]
+        )
+
+        #  uvw.append(np.dot(xyz_uvw_mat, xyz_lambda))
+        uvw[i] = np.dot(xyz_uvw_mat, xyz_lambda)
 
     return uvw
