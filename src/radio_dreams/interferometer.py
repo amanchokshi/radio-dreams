@@ -84,6 +84,8 @@ def xyz_uvw(xyz, freqs, dec0, ha0):
     """
     # All possible baseline distances, in metres
     # This is equivalent to two nested for loops
+
+    # This is the numpy version. Have moved to numba
     # lx = np.concatenate(xyz[0] - xyz[0][:, None])
     # ly = np.concatenate(xyz[1] - xyz[1][:, None])
     # lz = np.concatenate(xyz[2] - xyz[2][:, None])
@@ -122,7 +124,6 @@ def xyz_uvw(xyz, freqs, dec0, ha0):
     wavelengths = c / freqs
 
     uvw = np.zeros((freqs.shape[0], 3, len(lx)))
-    #  uvw = []
     for i in range(wavelengths.shape[0]):
 
         lx_lambda = np.array(lx) / wavelengths[i]
@@ -139,7 +140,6 @@ def xyz_uvw(xyz, freqs, dec0, ha0):
             ]
         )
 
-        #  uvw.append(np.dot(xyz_uvw_mat, xyz_lambda))
         uvw[i] = np.dot(xyz_uvw_mat, xyz_lambda)
 
     return uvw
