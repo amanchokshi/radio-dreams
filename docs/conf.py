@@ -36,6 +36,7 @@ sys.path.append(os.path.dirname(__file__))
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
 ]

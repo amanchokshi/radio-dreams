@@ -149,7 +149,8 @@ def gauss_kernel(sigma, kersize):
     """Create 2D gaussian kernel.
 
     :param float sigma: Standard deviation of gaussian kernel
-    :param float kersize: Kernel size in pixels. *Must be odd number for symmetry*
+    :param float kersize: Kernel size in pixels.
+        *Must be odd number for symmetry*
 
     :returns: 2D gaussian kernal
     :rtype: :class:`~numpy.ndarray`
@@ -177,14 +178,19 @@ def uv_degrid(
 ):
     """Degrid continuous uv baselines onto regular uv grid.
 
-    :param int max_lambda: Maximum baseline to evaluate, defaults to [1400]
-    :param int nside: Number of pixels per side, defaults to [511]
+    :param int max_lambda: Maximum baseline to evaluate,
+        defaults to [1400]
+    :param int nside: Number of pixels per side,
+        defaults to [511]
     :param uvw: UVW array object from :func:`xyz_uvw`
     :type uvw: :class:`~numpy.ndarray`
-    :param float sigma: Standard deviation of gaussian kernel, defaults to [3]
-    :param int kernel: Kernel size in pixel, *Must be odd number for symmetry*,
+    :param float sigma: Standard deviation of gaussian kernel,
+        defaults to [3]
+    :param int kernel: Kernel size in pixel,
+        *Must be odd number for symmetry*,
         defaults to [21]
-    :param str kernel: Kernel type, `gaussian` or `None`, defaults to ["gaussian"]
+    :param str kernel: Kernel type, `gaussian` or `None`,
+        defaults to ["gaussian"]
 
     :returns: UV grid of size [nside, nside]
     :rtype: :class:`~numpy.ndarray`
