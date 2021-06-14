@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "radio-dreams"
-version = "0.3.1"
+version = "0.3.2"
 license = "MIT"
 readme = "README.rst"
 description = "Imagined Interferometers"
