@@ -142,3 +142,33 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     uvw = np.dot(xyz_uvw_mat, xyz_lambda)
 
     return uvw
+
+
+@njit()
+def uv_degrid(max_lambda=1400, nside=511, uvw=None):
+    """Degrid continuous uv baselines onto regular uv grid."""
+    # Define a grid of u, v coords
+    u_range = np.linspace(-1 * max_lambda, max_lambda, nside)
+    v_range = np.linspace(-1 * max_lambda, max_lambda, nside)
+
+    # Create empty uv grid onto which uv samples will be degridded
+    uv_grid = np.zeros((u_range.shape[0], v_range.shape[0]))
+
+    # Continuous uv coords of array to be degridded onto uv_grid
+    u, v = uvw[0], uvw[1]
+
+    # This numpy magic doesn't work with numba - fallback to for loops
+    # u_closest_ind = np.argmin(np.abs(u_range - u[:, None]), axis=1)
+    # v_closest_ind = np.argmin(np.abs(v_range - v[:, None]), axis=1)
+
+    u_closest_ind = np.zeros((u.shape[0]))
+    v_closest_ind = np.zeros((v.shape[0]))
+    for i in range(u.shape[0]):
+
+        u_closest_ind[i] = np.argmin(np.abs(u_range - u[i]))
+        v_closest_ind[i] = np.argmin(np.abs(v_range - v[i]))
+
+    for i in range(u_closest_ind.shape[0]):
+        uv_grid[int(u_closest_ind[i]), int(v_closest_ind[i])] += 1
+
+    return uv_grid
