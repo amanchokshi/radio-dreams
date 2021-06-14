@@ -146,7 +146,14 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
 
 @njit()
 def gauss_kernel(sigma, kersize):
-    """Create 2D gaussian kernel."""
+    """Create 2D gaussian kernel.
+
+    :param float sigma: Standard deviation of gaussian kernel
+    :param float kersize: Kernel size in pixels. *Must be odd number for symmetry*
+
+    :returns: 2D gaussian kernal
+    :rtype: :class:`~numpy.ndarray`
+    """
     x, y = np.arange(kersize), np.arange(kersize)
 
     cen = int(kersize / 2)
@@ -168,7 +175,20 @@ def gauss_kernel(sigma, kersize):
 def uv_degrid(
     max_lambda=1400, nside=511, uvw=None, sigma=3, kersize=21, kernel="gaussian"
 ):
-    """Degrid continuous uv baselines onto regular uv grid."""
+    """Degrid continuous uv baselines onto regular uv grid.
+
+    :param int max_lambda: Maximum baseline to evaluate, defaults to [1400]
+    :param int nside: Number of pixels per side, defaults to [511]
+    :param uvw: UVW array object from :func:`xyz_uvw`
+    :type uvw: :class:`~numpy.ndarray`
+    :param float sigma: Standard deviation of gaussian kernel, defaults to [3]
+    :param int kernel: Kernel size in pixel, *Must be odd number for symmetry*,
+        defaults to [21]
+    :param str kernel: Kernel type, `gaussian` or `None`, defaults to ["gaussian"]
+
+    :returns: UV grid of size [nside, nside]
+    :rtype: :class:`~numpy.ndarray`
+    """
     # Define a grid of u, v coords
     u_range = np.linspace(-1 * max_lambda, max_lambda, nside)
     v_range = np.linspace(-1 * max_lambda, max_lambda, nside)
@@ -192,20 +212,24 @@ def uv_degrid(
         # Use gaussian kernal by default
         if kernel == "gaussian":
 
+            # Generate the gaussian kernel
             gauss = gauss_kernel(sigma, kersize)
-
             ker_2 = int(kersize / 2)
 
+            # Indices of uv_grid where kernel overlaps, centered at (u_ind, v_ind)
             v_grid_inds = np.arange(v_ind - ker_2, v_ind + ker_2 + 1)
             u_grid_inds = np.arange(u_ind - ker_2, u_ind + ker_2 + 1)
 
+            # Append kernel values to uv_grid
             for vi in range(v_grid_inds.shape[0]):
                 for ui in range(u_grid_inds.shape[0]):
                     if (v_grid_inds[vi] >= 0) & (v_grid_inds[vi] < nside):
                         if (u_grid_inds[ui] >= 0) & (u_grid_inds[ui] < nside):
                             uv_grid[v_grid_inds[vi], u_grid_inds[ui]] += gauss[vi, ui]
 
-        # if not gaussian snap to closest gridpoint
+        # If not gaussian snap to closest gridpoint
+        # All flux moved to nearest pixel
         else:
             uv_grid[int(v_ind), int(u_ind)] += 1
+
     return uv_grid
