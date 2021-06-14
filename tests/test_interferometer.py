@@ -2,6 +2,8 @@
 
 import os
 
+os.environ["NUMBA_DISABLE_JIT"] = "1"
+
 import numpy as np
 from radio_dreams.interferometer import enh_xyz, read_layout, xyz_uvw
 from skyfield.api import wgs84
@@ -45,7 +47,7 @@ def test_xyz_uvw():
 
     layout = read_layout(f"{test_data}/test_mwa.txt")
     xyz = enh_xyz(layout, mwa_geo.latitude.radians)
-    uvw = xyz_uvw(xyz, freqs, 0, mwa_geo.latitude.radians)
+    uvw = xyz_uvw(xyz, freqs, mwa_geo.latitude.radians, 0)
 
     assert uvw.shape == (2, 3, 9)
 

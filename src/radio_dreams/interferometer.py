@@ -7,6 +7,7 @@ __date__ = "2021-06-13"
 __cite__ = "https://github.com/amanchokshi"
 
 import numpy as np
+from numba import njit
 from scipy.constants import c
 
 
@@ -27,6 +28,7 @@ def read_layout(layout_txt):
     return np.loadtxt(layout_txt).T
 
 
+@njit()
 def enh_xyz(layout, latitude):
     """Convert from local E, N, H to X, Y, Z coordinates.
 
@@ -66,43 +68,43 @@ def enh_xyz(layout, latitude):
     return xyz
 
 
-def xyz_uvw(xyz, freqs, ha0, dec0):
+def xyz_uvw(xyz, freqs, dec0, ha0):
     """Convert local XYZ to UVU coordinates.
 
     U, V, W are coordinates used to represent interferometric baselines
 
     :param xyz: :class:`~numpy.ndarray` object from :func:`enh_xyz`
     :param freqs: :class:`~numpy.ndarray` 1D of frequencies in Hz
-    :param ha0: Hour Angle of phase centre in radians `float`
     :param dec0: Declination of phase centre in radians `float`
+    :param ha0: Hour Angle of phase centre in radians `float`
 
     :returns: UVW cube, with 0 axis for frequency and 1, 2 for UVWs
     :rtype: :class:`numpy.ndarray`
     """
     # All possible baseline distances, in metres
     # This is equivalent to two nested for loops
-    lx = np.concatenate(xyz[0] - xyz[0][:, None])
-    ly = np.concatenate(xyz[1] - xyz[1][:, None])
-    lz = np.concatenate(xyz[2] - xyz[2][:, None])
+    # lx = np.concatenate(xyz[0] - xyz[0][:, None])
+    # ly = np.concatenate(xyz[1] - xyz[1][:, None])
+    # lz = np.concatenate(xyz[2] - xyz[2][:, None])
 
-    # lx = []
-    # for i in xyz[0]:
-    #     for j in xyz[0]:
-    #         lx.append(i - j)
-    # ly = []
-    # for i in xyz[1]:
-    #     for j in xyz[1]:
-    #         ly.append(i - j)
-    # lz = []
-    # for i in xyz[2]:
-    #     for j in xyz[2]:
-    #         lz.append(i - j)
+    lx = np.zeros([xyz.shape[-1] ** 2])
+    for i, ii in enumerate(xyz[0]):
+        for j, jj in enumerate(xyz[0]):
+            lx[i * j] = ii - jj
+    ly = np.zeros([xyz.shape[-1] ** 2])
+    for i, ii in enumerate(xyz[1]):
+        for j, jj in enumerate(xyz[1]):
+            ly[i * j] = ii - jj
+    lz = np.zeros([xyz.shape[-1] ** 2])
+    for i, ii in enumerate(xyz[2]):
+        for j, jj in enumerate(xyz[2]):
+            lz[i * j] = ii - jj
 
     wavelengths = c / freqs
 
-    lx_lambda = np.array(lx) / np.atleast_2d(wavelengths).T
-    ly_lambda = np.array(ly) / np.atleast_2d(wavelengths).T
-    lz_lambda = np.array(lz) / np.atleast_2d(wavelengths).T
+    lx_lambda = lx / np.atleast_2d(wavelengths).T
+    ly_lambda = ly / np.atleast_2d(wavelengths).T
+    lz_lambda = lz / np.atleast_2d(wavelengths).T
 
     xyz_lambda = np.swapaxes(np.array([lx_lambda, ly_lambda, lz_lambda]), 0, 1)
 
