@@ -30,7 +30,7 @@ def read_layout(layout_path=None):
 
 @njit(parallel=True, nogil=True)
 def enh_xyz(layout=None, latitude=None):
-    """Convert from local E, N, H to X, Y, Z coordinates.
+    r"""Convert from local E, N, H to X, Y, Z coordinates.
 
     Antenna positions are defined with respect to the array centre.
 
@@ -71,9 +71,27 @@ def enh_xyz(layout=None, latitude=None):
 
 @njit(parallel=True, nogil=True)
 def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
-    """Convert local XYZ to UVU coordinates.
+    r"""Convert local XYZ to UVU coordinates.
 
     U, V, W are coordinates used to represent interferometric baselines
+
+    .. math::
+
+        \begin{bmatrix}
+            u \\
+            v \\
+            w
+        \end{bmatrix} =
+        \begin{bmatrix}
+            \sin(H_0) & \cos(H_0) & 0 \\
+            -\sin(\delta_0)\cos(H_0) & \sin(\delta_0)\sin(H_0) & \cos(\delta_0) \\
+            \cos(\delta_0)\cos(H_0) & -\cos(\delta_0)\sin(H_0) & \sin(\delta_0)
+        \end{bmatrix}
+        \begin{bmatrix}
+            X_\lambda \\
+            Y_\lambda \\
+            Z_\lambda
+        \end{bmatrix},
 
     :param xyz:  object from :func:`enh_xyz`
     :type xyz: :class:`~numpy.ndarray`
