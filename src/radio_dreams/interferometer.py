@@ -265,13 +265,14 @@ def radec_lmn(ra=None, ra0=None, dec=None, dec0=None):
 
     .. math::
         :nowrap:
+
         \begin{eqnarray}
             & l =& \, \cos \, \delta  \sin \, \Delta \alpha  \\
             & m =& \, \sin \, \delta \cos \, \delta 0 -
                          \cos \delta \sin \delta 0 \cos \Delta \alpha \\
             & n =& \, \sin \, \delta \sin \, \delta 0 +
                          \cos \delta \cos \delta 0 \cos \Delta \alpha \\
-            & n =& \, \sqrt{1 - l^2 - m^2} - 1
+            &   =& \, \sqrt{1 - l^2 - m^2} - 1
         \end{eqnarray}
 
     Here :math:`\Delta \alpha = \alpha - \alpha 0` is the difference between
