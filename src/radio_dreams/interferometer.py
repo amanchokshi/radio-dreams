@@ -257,3 +257,44 @@ def uv_degrid(
             uv_grid[int(v_ind), int(u_ind)] += 1
 
     return uv_grid
+
+
+@njit(parallel=True, nogil=True)
+def radec_lmn(ra=None, ra0=None, dec=None, dec0=None):
+    r"""Calculate LMN direction cosines from Ra/Dec with respect to a phase center.
+
+    .. math::
+        :nowrap:
+        \begin{eqnarray}
+            & l =& \, \cos \, \delta  \sin \, \Delta \alpha  \\
+            & m =& \, \sin \, \delta \cos \, \delta 0 -
+                         \cos \delta \sin \delta 0 \cos \Delta \alpha \\
+            & n =& \, \sin \, \delta \sin \, \delta 0 +
+                         \cos \delta \cos \delta 0 \cos \Delta \alpha \\
+            & n =& \, \sqrt{1 - l^2 - m^2} - 1
+        \end{eqnarray}
+
+    Here :math:`\Delta \alpha = \alpha - \alpha 0` is the difference between
+    the Right Ascension of each coordinate and the phase centre and
+    :math:`\delta 0` is the Declination of the phase centre.
+
+    :param ra: Right ascension in `radians`
+    :type ra: :class:`~numpy.ndarray`
+    :param dec: Declination in `radians`
+    :type dec: :class:`~numpy.ndarray`
+    :param float ra0: Right ascension of phase centre in `radians`
+    :param float dec0: Declination of phase centre in `radians`
+
+    :returns: lmn direction cosines of shape (3, n)
+    :rtype: :class:`~numpy.ndarray`
+    """
+
+    del_ra = ra - ra0
+
+    l = np.cos(dec) * np.sin(del_ra)
+    m = np.sin(dec) * np.cos(dec0) - np.cos(dec) * np.sin(dec0) * np.cos(del_ra)
+    n = np.sin(dec) * np.sin(dec0) - np.cos(dec) * np.cos(dec0) * np.cos(del_ra)
+
+    lmn = np.vstack((l, m, n))
+
+    return lmn

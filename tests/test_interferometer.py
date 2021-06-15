@@ -4,9 +4,11 @@ import os
 
 os.environ["NUMBA_DISABLE_JIT"] = "1"
 
+import numpy as np
 from radio_dreams.interferometer import (
     enh_xyz,
     gauss_kernel,
+    radec_lmn,
     read_layout,
     uv_degrid,
     xyz_uvw,
@@ -94,3 +96,20 @@ def test_uv_degrid_gaussian_kernel():
 
     assert uv.shape == (20, 20)
     assert uv[0, 0] == 1.295932713086053e-05
+
+
+def test_radec_lmn():
+    """Check output values and shape."""
+
+    lmn = radec_lmn(ra=np.arange(4), ra0=3, dec=np.arange(-2, 2), dec0=0)
+
+    out = np.array(
+        [
+            [0.05872664, -0.4912955, -0.84147098, 0.0],
+            [-0.90929743, -0.84147098, 0.0, 0.84147098],
+            [-0.41198225, 0.2248451, -0.54030231, -0.54030231],
+        ]
+    )
+
+    assert lmn.shape == (3, 4)
+    assert np.all(np.isclose(out, lmn))
