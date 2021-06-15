@@ -162,7 +162,7 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     return uvw
 
 
-@njit(parallel=True, nogil=True)
+@njit()
 def gauss_kernel(sigma, kersize):
     """Create 2D gaussian kernel.
 
