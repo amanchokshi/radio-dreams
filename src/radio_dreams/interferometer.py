@@ -28,7 +28,7 @@ def read_layout(layout_path=None):
     return np.loadtxt(layout_path).T
 
 
-@njit(parallel=True)
+@njit(parallel=True, nogil=True)
 def enh_xyz(layout=None, latitude=None):
     """Convert from local E, N, H to X, Y, Z coordinates.
 
@@ -69,7 +69,7 @@ def enh_xyz(layout=None, latitude=None):
     return xyz
 
 
-@njit(parallel=True)
+@njit(parallel=True, nogil=True)
 def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     """Convert local XYZ to UVU coordinates.
 
@@ -144,7 +144,7 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     return uvw
 
 
-@njit(parallel=True)
+@njit(parallel=True, nogil=True)
 def gauss_kernel(sigma, kersize):
     """Create 2D gaussian kernel.
 
@@ -172,7 +172,7 @@ def gauss_kernel(sigma, kersize):
     return gauss
 
 
-@njit(parallel=True)
+@njit(parallel=True, nogil=True)
 def uv_degrid(
     max_lambda=1400, nside=511, uvw=None, sigma=3, kersize=21, kernel="gaussian"
 ):
