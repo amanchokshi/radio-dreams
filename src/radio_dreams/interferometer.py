@@ -7,7 +7,7 @@ __date__ = "2021-06-13"
 __cite__ = "https://github.com/amanchokshi"
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 from scipy.constants import c
 
 
@@ -28,7 +28,7 @@ def read_layout(layout_path=None):
     return np.loadtxt(layout_path).T
 
 
-@njit()
+@njit(parallel=True)
 def enh_xyz(layout=None, latitude=None):
     """Convert from local E, N, H to X, Y, Z coordinates.
 
@@ -69,7 +69,7 @@ def enh_xyz(layout=None, latitude=None):
     return xyz
 
 
-@njit()
+@njit(parallel=True)
 def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     """Convert local XYZ to UVU coordinates.
 
@@ -144,7 +144,7 @@ def xyz_uvw(xyz=None, freq=None, dec0=None, ha0=None):
     return uvw
 
 
-@njit()
+@njit(parallel=True)
 def gauss_kernel(sigma, kersize):
     """Create 2D gaussian kernel.
 
@@ -172,7 +172,7 @@ def gauss_kernel(sigma, kersize):
     return gauss
 
 
-@njit()
+@njit(parallel=True)
 def uv_degrid(
     max_lambda=1400, nside=511, uvw=None, sigma=3, kersize=21, kernel="gaussian"
 ):
@@ -209,7 +209,7 @@ def uv_degrid(
     # u_closest_ind = np.argmin(np.abs(u_range - u[:, None]), axis=1)
     # v_closest_ind = np.argmin(np.abs(v_range - v[:, None]), axis=1)
 
-    for i in range(u.shape[0]):
+    for i in prange(u.shape[0]):
 
         # Indicies of the closest pixel
         u_ind = np.argmin(np.abs(u_range - u[i]))
@@ -227,8 +227,8 @@ def uv_degrid(
             u_grid_inds = np.arange(u_ind - ker_2, u_ind + ker_2 + 1)
 
             # Append kernel values to uv_grid
-            for vi in range(v_grid_inds.shape[0]):
-                for ui in range(u_grid_inds.shape[0]):
+            for vi in prange(v_grid_inds.shape[0]):
+                for ui in prange(u_grid_inds.shape[0]):
                     if (v_grid_inds[vi] >= 0) & (v_grid_inds[vi] < nside):
                         if (u_grid_inds[ui] >= 0) & (u_grid_inds[ui] < nside):
                             uv_grid[v_grid_inds[vi], u_grid_inds[ui]] += gauss[vi, ui]
