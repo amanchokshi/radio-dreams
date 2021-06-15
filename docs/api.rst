@@ -16,3 +16,4 @@
 .. autofunction:: radio_dreams.interferometer.xyz_uvw
 .. autofunction:: radio_dreams.interferometer.gauss_kernel
 .. autofunction:: radio_dreams.interferometer.uv_degrid
+.. autofunction:: radio_dreams.interferometer.radec_lmn
